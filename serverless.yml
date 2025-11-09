@@ -15,7 +15,7 @@ custom:
     format: "cjs"
     packagerOptions:
       scripts:
-        - npm i --arch=arm64 --platform=linux sharp
+        - npm i --cpu=arm64 --os=linux --include=optional sharp
 
 provider:
   name: aws
