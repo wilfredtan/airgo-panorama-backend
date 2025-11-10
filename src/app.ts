@@ -23,16 +23,6 @@ server.startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests();
 export const app = express();
 
 // Middleware
-const corsOptions = {
-	origin: [
-		'http://127.0.0.1:8000',
-		'http://localhost:8000',
-		'https://wilfredtan.github.io'
-	],
-	credentials: true
-};
-
-app.use(cors(corsOptions));
 app.use(morgan("tiny"));
 app.use(express.json({ limit: "128mb" }));
 app.use(express.urlencoded({ limit: "128mb", extended: true }));
