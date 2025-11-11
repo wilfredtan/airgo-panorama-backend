@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import sharp from 'sharp';
-import { S3Client, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, HeadObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import Image from '../models/Image';
 
@@ -32,6 +32,8 @@ export const completeUpload = async (req: Request, res: Response) => {
 		let width = 0;
 		let height = 0;
 		let processedBuffer: Buffer | null = null;
+		let thumbnailBuffer: Buffer | null = null;
+		let thumbnailKey: string | undefined;
 
 		try {
 			const getCommand = new GetObjectCommand({
@@ -74,6 +76,19 @@ export const completeUpload = async (req: Request, res: Response) => {
 
 			processedBuffer = await processedImage.jpeg({ quality: 85 }).toBuffer();
 
+			// Generate thumbnail
+			try {
+				thumbnailBuffer = await sharp(processedBuffer)
+					.resize(200, null, {
+						withoutEnlargement: true
+					})
+					.jpeg({ quality: 80 })
+					.toBuffer();
+				thumbnailKey = `${key}-thumb.jpg`;
+			} catch (thumbnailError) {
+				console.warn('Failed to generate thumbnail:', thumbnailError);
+			}
+
 		} catch (error) {
 			console.error('Error processing image:', error);
 			// Continue without processing if Sharp fails
@@ -88,7 +103,8 @@ export const completeUpload = async (req: Request, res: Response) => {
 			width,
 			height,
 			fileType: type,
-			s3Key: key
+			s3Key: key,
+			thumbnailS3Key: thumbnailKey
 		});
 
 		await image.save();
@@ -97,6 +113,21 @@ export const completeUpload = async (req: Request, res: Response) => {
 		if (processedBuffer) {
 			// Could upload processed version back to S3 here if needed
 			// For now, we'll keep the original
+		}
+
+		// Upload thumbnail to S3 if generated
+		if (thumbnailBuffer && thumbnailKey) {
+			try {
+				const putThumbnailCommand = new PutObjectCommand({
+					Bucket: bucket,
+					Key: thumbnailKey,
+					Body: thumbnailBuffer,
+					ContentType: 'image/jpeg'
+				});
+				await s3Client.send(putThumbnailCommand);
+			} catch (uploadError) {
+				console.warn('Failed to upload thumbnail to S3:', uploadError);
+			}
 		}
 
 		res.json({

@@ -8,6 +8,7 @@ export interface IImage extends Document {
   height: number;
   fileType: string;
   s3Key: string;
+  thumbnailS3Key?: string;
   bookmarked?: boolean;
   deletedAt?: Date;
   createdAt: Date;
@@ -21,6 +22,7 @@ const ImageSchema: Schema = new Schema({
   height: { type: Number, required: true },
   fileType: { type: String, required: true },
   s3Key: { type: String, required: true },
+  thumbnailS3Key: { type: String },
   bookmarked: { type: Boolean, default: false },
   deletedAt: { type: Date },
 }, {

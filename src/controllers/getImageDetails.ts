@@ -1,7 +1,7 @@
 import ImageModel from '../models/Image';
 
 export const getImageDetailsResolver = async (_: any, { id }: { id: string }) => {
-  const image = await ImageModel.findOne({ _id: id, deletedAt: { $exists: false } });
+  const image = await ImageModel.findOne({ _id: id, deletedAt: { $exists: false } }).lean();
   if (!image) {
     throw new Error('Image not found');
   }

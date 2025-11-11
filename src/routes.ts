@@ -1,6 +1,6 @@
 import { Express } from "express";
 import multer from 'multer';
-import { downloadImageHandler, localDownloadHandler } from './controllers/download';
+import { downloadImageHandler, localDownloadHandler, thumbnailDownloadHandler, localThumbnailDownloadHandler } from './controllers/download';
 import { getPresignedUrl } from './controllers/presigned';
 import { completeUpload } from './controllers/completeUpload';
 import { handleLocalUpload } from './controllers/localUpload';
@@ -23,4 +23,6 @@ export const routes = (app: Express) => {
   // Download endpoints - return URLs instead of streaming files
   app.get('/api/images/:id/download', downloadImageHandler);
   app.get('/api/images/local-download/:id', localDownloadHandler);
+  app.get('/api/images/:id/thumbnail', thumbnailDownloadHandler);
+  app.get('/api/images/local-thumbnail/:id', localThumbnailDownloadHandler);
 }

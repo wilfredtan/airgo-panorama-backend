@@ -23,7 +23,22 @@ export const handleLocalUpload = async (req: Request, res: Response) => {
 		// Write file to disk
 		await fs.writeFile(filePath, file.buffer);
 
-		// Process image metadata
+		// Generate thumbnail
+		let thumbnailPath: string | undefined;
+		try {
+			const thumbnailBuffer = await sharp(file.buffer)
+				.resize(200, null, {
+					withoutEnlargement: true
+				})
+				.jpeg({ quality: 80 })
+				.toBuffer();
+
+			const thumbnailFileName = `${uploadId}-${originalName || file.originalname}-thumb.jpg`;
+			thumbnailPath = path.join(uploadsDir, thumbnailFileName);
+			await fs.writeFile(thumbnailPath, thumbnailBuffer);
+		} catch (error) {
+			console.warn('Failed to generate thumbnail:', error);
+		}
 		let width = 0;
 		let height = 0;
 
@@ -37,6 +52,7 @@ export const handleLocalUpload = async (req: Request, res: Response) => {
 
 		// Store relative path in s3Key for consistency with database schema
 		const relativePath = path.join('uploads', 'images', fileName).replace(/\\/g, '/');
+		const thumbnailRelativePath = thumbnailPath ? path.relative(process.cwd(), thumbnailPath).replace(/\\/g, '/') : undefined;
 
 		// Create database record
 		const image = new Image({
@@ -45,7 +61,8 @@ export const handleLocalUpload = async (req: Request, res: Response) => {
 			width,
 			height,
 			fileType: type || file.mimetype,
-			s3Key: relativePath
+			s3Key: relativePath,
+			thumbnailS3Key: thumbnailRelativePath
 		});
 
 		await image.save();
