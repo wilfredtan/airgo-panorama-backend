@@ -28,7 +28,7 @@ provider:
   memorySize: 512
   logRetentionInDays: 3
   versionFunctions: false
-  timeout: 15
+  timeout: 30
   environment:
     BUCKET_NAME: panorama-images-${self:provider.stage}
     MONGODB_URI: ${ssm:/panorama-image-manager/mongodb_uri, env:MONGODB_URI}
@@ -59,6 +59,7 @@ functions:
           - http://127.0.0.1:3000
           - http://localhost:3000
           - https://wilfredtan.github.io
+      maximumPayloadSize: 50
 
 resources:
   Resources:
