@@ -23,8 +23,8 @@ export const app = express();
 
 // Middleware
 app.use(morgan("tiny"));
-app.use(express.json({ limit: "128mb" }));
-app.use(express.urlencoded({ limit: "128mb", extended: true }));
+app.use(express.json());
+app.use(express.urlencoded());
 
 // Database connection middleware - runs before all routes
 app.use(async (req, res, next) => {
