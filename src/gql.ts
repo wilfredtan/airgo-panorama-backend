@@ -36,9 +36,9 @@ export const typeDefs = gql`
     width: Int!
     height: Int!
     fileType: String!
-    s3Key: String!
     createdAt: Date!
     bookmarked: Boolean!
+    previewUrl: String!
   }
 
   type ImageConnection {
